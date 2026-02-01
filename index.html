@@ -71,81 +71,115 @@ footer {
 </head>
 
 <body>
+
 <div class="container">
 
-<header>
-  <h1>Thiago Martins</h1>
-  <p>
-    Coleção de estudos, experimentos e interações.
-    Cada item leva a um projeto independente em tela cheia.
-  </p>
-</header>
+  <!-- Botão de play discreto -->
+  <button id="playButton" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 12px 24px;
+    font-size: 1rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1000;
+  ">Play</button>
 
-<section>
-  <h2>Interações Visuais</h2>
-  <ul>
-    <!-- PROJETO 1 -->
-    <li>
-      <a href="projeto1.html" class="topic-link">
-        <div class="card">
-          <div class="topic-title">Tecido interativo</div>
-          <div class="topic-desc">Simulação de malha reagindo a movimento e toque.</div>
-          <canvas id="fabric1"></canvas>
-        </div>
-      </a>
-    </li>
+  <header>
+    <h1>Thiago Martins</h1>
+    <p>
+      Coleção de estudos, experimentos e interações.
+      Cada item leva a um projeto independente em tela cheia.
+    </p>
+  </header>
 
-    <!-- PROJETO 2 -->
-    <li>
-      <a href="projeto2.html" class="topic-link">
-        <div class="card">
-          <div class="topic-title">Campo orbital energético</div>
-          <div class="topic-desc">Partículas orbitais guiadas por campos senoidais vivos.</div>
-          <canvas id="fabric2"></canvas>
-        </div>
-      </a>
-    </li>
+  <section>
+    <h2>Interações Visuais</h2>
+    <ul>
+      <!-- PROJETO 1 -->
+      <li>
+        <a href="projeto1.html" class="topic-link">
+          <div class="card">
+            <div class="topic-title">Tecido interativo</div>
+            <div class="topic-desc">Simulação de malha reagindo a movimento e toque.</div>
+            <canvas id="fabric1"></canvas>
+          </div>
+        </a>
+      </li>
 
-    <!-- PROJETO 3 -->
-    <li>
-      <a href="projeto3.html" class="topic-link">
-        <div class="card">
-          <div class="topic-title">Tecido sensível ao toque</div>
-          <div class="topic-desc">Interação elástica com mouse e touch.</div>
-          <canvas id="fabric3"></canvas>
-        </div>
-      </a>
-    </li>
+      <!-- PROJETO 2 -->
+      <li>
+        <a href="projeto2.html" class="topic-link">
+          <div class="card">
+            <div class="topic-title">Campo orbital energético</div>
+            <div class="topic-desc">Partículas orbitais guiadas por campos senoidais vivos.</div>
+            <canvas id="fabric2"></canvas>
+          </div>
+        </a>
+      </li>
 
-    <!-- PROJETO 4 -->
-    <li>
-      <a href="projeto4.html" class="topic-link">
-        <div class="card">
-          <div class="topic-title">Tecido colapsável interativo</div>
-          <div class="topic-desc">Malha reagindo ao toque com efeito elástico gradual.</div>
-          <canvas id="fabric4"></canvas>
-        </div>
-      </a>
-    </li>
+      <!-- PROJETO 3 -->
+      <li>
+        <a href="projeto3.html" class="topic-link">
+          <div class="card">
+            <div class="topic-title">Tecido sensível ao toque</div>
+            <div class="topic-desc">Interação elástica com mouse e touch.</div>
+            <canvas id="fabric3"></canvas>
+          </div>
+        </a>
+      </li>
 
-    <!-- PROJETO 5 -->
-    <li>
-      <a href="projeto5.html" class="topic-link">
-        <div class="card">
-          <div class="topic-title">Partículas Interativas</div>
-          <div class="topic-desc">Partículas independentes reagindo ao mouse e clique.</div>
-          <canvas id="fabric5"></canvas>
-        </div>
-      </a>
-    </li>
+      <!-- PROJETO 4 -->
+      <li>
+        <a href="projeto4.html" class="topic-link">
+          <div class="card">
+            <div class="topic-title">Tecido colapsável interativo</div>
+            <div class="topic-desc">Malha reagindo ao toque com efeito elástico gradual.</div>
+            <canvas id="fabric4"></canvas>
+          </div>
+        </a>
+      </li>
 
-  </ul>
-</section>
+      <!-- PROJETO 5 -->
+      <li>
+        <a href="projeto5.html" class="topic-link">
+          <div class="card">
+            <div class="topic-title">Partículas Interativas</div>
+            <div class="topic-desc">Partículas independentes reagindo ao mouse e clique.</div>
+            <canvas id="fabric5"></canvas>
+          </div>
+        </a>
+      </li>
 
-<footer>
-  © 2026 — Portfólio pessoal
-</footer>
+    </ul>
+  </section>
+
+  <footer>
+    © 2026 — Portfólio pessoal
+  </footer>
 </div>
+
+<script>
+/* ======================
+   BOTÃO DE PLAY DE MÚSICA
+====================== */
+document.addEventListener("DOMContentLoaded", () => {
+  const audio = new Audio("som.mp3"); // seu arquivo de áudio
+  audio.loop = true;
+  audio.preload = "auto";
+
+  const playButton = document.getElementById("playButton");
+  playButton.addEventListener("click", () => {
+    audio.play().catch(err => console.log("Erro ao tocar áudio:", err));
+    playButton.style.display = "none"; // desaparece o botão
+  });
+});
+</script>
 
 <script>
 /* ======================
@@ -156,7 +190,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
   const ctx = c.getContext("2d");
   let points = [];
   let pointer = {x:0, y:0, active:false};
-  let repel = false;
+  let repel = false; // adicionado para Fabric5
 
   function resize() {
     c.width = c.offsetWidth;
@@ -275,7 +309,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
         ctx.fill();
       }
     }
-    else if(type==="fabric5"){
+    else if(type==="fabric5"){ // partículas interativas
       for(const p of points){
         p.vx += (Math.random()-0.5)*0.1;
         p.vy += (Math.random()-0.5)*0.1;
