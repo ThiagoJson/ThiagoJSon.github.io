@@ -72,9 +72,6 @@ footer {
 
 <body>
 <div class="container">
-  <audio autoplay loop>
-  <source src="som.mp4" type="audio/mp4">
-</audio>
 
 <header>
   <h1>Thiago Martins</h1>
@@ -149,24 +146,7 @@ footer {
   © 2026 — Portfólio pessoal
 </footer>
 </div>
-  
-<script>
-window.addEventListener("load", () => {
-  const audio = new Audio("som.mp3");
-  audio.loop = true;
 
-  // Tenta tocar imediatamente
-  audio.play().catch(() => {
-    // Se o autoplay falhar, toca quando o usuário clicar na página
-    const clickHandler = () => {
-      audio.play();
-      window.removeEventListener("click", clickHandler);
-    };
-    window.addEventListener("click", clickHandler);
-  });
-});
-</script>
-  
 <script>
 /* ======================
    FUNÇÃO UNIFICADA DE CANVAS
@@ -176,7 +156,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
   const ctx = c.getContext("2d");
   let points = [];
   let pointer = {x:0, y:0, active:false};
-  let repel = false; // adicionado para Fabric5
+  let repel = false;
 
   function resize() {
     c.width = c.offsetWidth;
@@ -295,7 +275,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
         ctx.fill();
       }
     }
-    else if(type==="fabric5"){ // partículas interativas
+    else if(type==="fabric5"){
       for(const p of points){
         p.vx += (Math.random()-0.5)*0.1;
         p.vy += (Math.random()-0.5)*0.1;
@@ -349,8 +329,6 @@ initFabric({canvasId:"fabric3", spacing:16, type:"points", color:"#00f0ff", radi
 initFabric({canvasId:"fabric4", spacing:18, type:"fabric4", color:"#ff6cff", radius:120});
 initFabric({canvasId:"fabric5", spacing:18, type:"fabric5", color:"#ffdc4f", radius:120});
 </script>
-  
-
 
 </body>
 </html>
