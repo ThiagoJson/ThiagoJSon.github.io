@@ -11,6 +11,7 @@
     padding: 0;
     background: #0e0e0e;
     overflow: hidden;
+    touch-action: none; /* ESSENCIAL para mobile */
   }
 
   canvas {
@@ -43,34 +44,65 @@
 const canvas = document.getElementById("fabric");
 const ctx = canvas.getContext("2d");
 
+/* ===== RESIZE ===== */
 function resize() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  initPoints();
 }
-resize();
 window.addEventListener("resize", resize);
 
-let mouse = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
+/* ===== MOUSE / TOUCH STATE ===== */
+let pointer = {
+  x: window.innerWidth / 2,
+  y: window.innerHeight / 2,
   down: false,
   active: false
 };
 
+/* ===== DESKTOP ===== */
 document.addEventListener("mousemove", e => {
-  mouse.x = e.clientX;
-  mouse.y = e.clientY;
-  mouse.active = true;
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
+  pointer.active = true;
 });
 
-document.addEventListener("mousedown", () => mouse.down = true);
-document.addEventListener("mouseup", () => mouse.down = false);
-document.addEventListener("mouseleave", () => mouse.active = false);
+document.addEventListener("mousedown", () => pointer.down = true);
+document.addEventListener("mouseup", () => pointer.down = false);
+document.addEventListener("mouseleave", () => pointer.active = false);
 
+/* ===== MOBILE ===== */
+canvas.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  pointer.x = t.clientX;
+  pointer.y = t.clientY;
+  pointer.down = true;
+  pointer.active = true;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener("touchmove", e => {
+  const t = e.touches[0];
+  pointer.x = t.clientX;
+  pointer.y = t.clientY;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener("touchend", () => {
+  pointer.down = false;
+  pointer.active = false;
+});
+
+canvas.addEventListener("touchcancel", () => {
+  pointer.down = false;
+  pointer.active = false;
+});
+
+/* ===== TECIDO ===== */
 const points = [];
 const spacing = 20;
 
-function init() {
+function initPoints() {
   points.length = 0;
   for (let y = 0; y < canvas.height; y += spacing) {
     for (let x = 0; x < canvas.width; x += spacing) {
@@ -82,31 +114,33 @@ function init() {
     }
   }
 }
-init();
 
+resize();
+
+/* ===== ANIMAÇÃO ===== */
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   points.forEach(p => {
 
-    // força de retorno
+    /* retorno ao estado original */
     p.vx += (p.ox - p.x) * 0.02;
     p.vy += (p.oy - p.y) * 0.02;
 
-    // interação
-    if (mouse.active) {
-      const dx = mouse.x - p.x;
-      const dy = mouse.y - p.y;
-      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    /* interação */
+    if (pointer.active) {
+      const dx = pointer.x - p.x;
+      const dy = pointer.y - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
       let force = Math.max(0, 120 - dist) * 0.02;
-      if (mouse.down) force = 2.5;
+      if (pointer.down) force = 1.8; // mobile-friendly
 
       p.vx += (dx / dist) * force;
       p.vy += (dy / dist) * force;
     }
 
-    // amortecimento
+    /* amortecimento */
     p.vx *= 0.88;
     p.vy *= 0.88;
 
