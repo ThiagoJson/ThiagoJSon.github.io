@@ -94,6 +94,7 @@ footer {
         </div>
       </a>
     </li>
+
     <!-- PROJETO 2 -->
     <li>
       <a href="projeto2.html" class="topic-link">
@@ -104,6 +105,7 @@ footer {
         </div>
       </a>
     </li>
+
     <!-- PROJETO 3 -->
     <li>
       <a href="projeto3.html" class="topic-link">
@@ -114,6 +116,18 @@ footer {
         </div>
       </a>
     </li>
+
+    <!-- PROJETO 4 -->
+    <li>
+      <a href="projeto4.html" class="topic-link">
+        <div class="card">
+          <div class="topic-title">Tecido colapsável interativo</div>
+          <div class="topic-desc">Malha reagindo ao toque com efeito elástico gradual.</div>
+          <canvas id="fabric4"></canvas>
+        </div>
+      </a>
+    </li>
+
   </ul>
 </section>
 
@@ -136,7 +150,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
     c.width = c.offsetWidth;
     c.height = c.offsetHeight;
     points = [];
-    if(type==="points" || type==="fabric1") {
+    if(type==="points" || type==="fabric1" || type==="fabric4") {
       for(let y=0;y<c.height;y+=spacing){
         for(let x=0;x<c.width;x+=spacing){
           points.push({x,y,ox:x,oy:y,vx:0,vy:0});
@@ -180,7 +194,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
   function animate(){
     ctx.clearRect(0,0,c.width,c.height);
 
-    if(type==="fabric1"){
+    if(type==="fabric1" || type==="fabric4"){
       for(const p of points){
         p.vx+=(p.ox-p.x)*0.025;
         p.vy+=(p.oy-p.y)*0.025;
@@ -252,6 +266,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
 initFabric({canvasId:"fabric1", spacing:18, type:"fabric1", color:"#4f9cff", radius:120});
 initFabric({canvasId:"fabric2", type:"orbital", color:"#9cffc1"});
 initFabric({canvasId:"fabric3", spacing:16, type:"points", color:"#00f0ff", radius:90});
+initFabric({canvasId:"fabric4", spacing:18, type:"fabric4", color:"#ff6cff", radius:120});
 </script>
 
 </body>
