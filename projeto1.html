@@ -6,125 +6,143 @@
 <title>Tecido Interativo</title>
 
 <style>
-    html, body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background: #000;
-        touch-action: none; /* MUITO IMPORTANTE */
-    }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0e0e0e;
+    overflow: hidden;
+    touch-action: none; /* ESSENCIAL para touch */
+  }
 
-    canvas {
-        display: block;
-    }
+  canvas {
+    display: block;
+  }
+
+  .back {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    color: #9a9a9a;
+    text-decoration: none;
+    z-index: 10;
+  }
+
+  .back:hover {
+    color: #4f9cff;
+  }
 </style>
 </head>
+
 <body>
 
-<canvas id="canvas"></canvas>
+<a href="index.html" class="back">← voltar</a>
+<canvas id="fabric"></canvas>
 
 <script>
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("fabric");
 const ctx = canvas.getContext("2d");
 
-let w, h;
+/* ===== RESIZE ===== */
 function resize() {
-    w = canvas.width = window.innerWidth;
-    h = canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-window.addEventListener("resize", resize);
 resize();
+window.addEventListener("resize", resize);
 
-// ===== CONFIGURAÇÃO DO TECIDO =====
+/* ===== TECIDO ===== */
 const spacing = 18;
-const cols = Math.floor(w / spacing);
-const rows = Math.floor(h / spacing);
+let points = [];
 
-const points = [];
-
-for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-        points.push({
-            x: x * spacing,
-            y: y * spacing,
-            ox: x * spacing,
-            oy: y * spacing,
-            vx: 0,
-            vy: 0
-        });
+function init() {
+  points = [];
+  for (let y = 0; y < canvas.height; y += spacing) {
+    for (let x = 0; x < canvas.width; x += spacing) {
+      points.push({
+        x, y,
+        ox: x, oy: y,
+        vx: 0, vy: 0
+      });
     }
+  }
 }
+init();
 
-// ===== INTERAÇÃO =====
-let pointer = {
-    x: -9999,
-    y: -9999,
-    active: false
+/* ===== PONTEIRO (mouse + touch) ===== */
+const pointer = {
+  x: -9999,
+  y: -9999,
+  active: false
 };
 
-// Mouse
+/* Mouse */
 window.addEventListener("mousemove", e => {
-    pointer.x = e.clientX;
-    pointer.y = e.clientY;
-    pointer.active = true;
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
+  pointer.active = true;
 });
 
 window.addEventListener("mouseleave", () => {
-    pointer.active = false;
+  pointer.active = false;
 });
 
-// Touch (CELULAR)
+/* Touch */
 window.addEventListener("touchstart", e => {
-    const t = e.touches[0];
-    pointer.x = t.clientX;
-    pointer.y = t.clientY;
-    pointer.active = true;
+  const t = e.touches[0];
+  pointer.x = t.clientX;
+  pointer.y = t.clientY;
+  pointer.active = true;
 }, { passive: false });
 
 window.addEventListener("touchmove", e => {
-    e.preventDefault(); // ESSENCIAL
-    const t = e.touches[0];
-    pointer.x = t.clientX;
-    pointer.y = t.clientY;
+  e.preventDefault(); // FAZ SEGUIR O DEDO
+  const t = e.touches[0];
+  pointer.x = t.clientX;
+  pointer.y = t.clientY;
 }, { passive: false });
 
 window.addEventListener("touchend", () => {
-    pointer.active = false;
+  pointer.active = false;
 });
 
-// ===== ANIMAÇÃO =====
+/* ===== ANIMAÇÃO ===== */
 function animate() {
-    ctx.clearRect(0, 0, w, h);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (const p of points) {
-        let dx = p.x - pointer.x;
-        let dy = p.y - pointer.y;
-        let dist = Math.sqrt(dx * dx + dy * dy);
+  for (const p of points) {
 
-        if (pointer.active && dist < 120) {
-            let force = (120 - dist) * 0.15;
-            let angle = Math.atan2(dy, dx);
-            p.vx += Math.cos(angle) * force;
-            p.vy += Math.sin(angle) * force;
-        }
+    /* força de retorno */
+    p.vx += (p.ox - p.x) * 0.025;
+    p.vy += (p.oy - p.y) * 0.025;
 
-        // física do tecido
-        p.vx += (p.ox - p.x) * 0.02;
-        p.vy += (p.oy - p.y) * 0.02;
+    /* interação */
+    if (pointer.active) {
+      const dx = p.x - pointer.x;
+      const dy = p.y - pointer.y;
+      const dist = Math.hypot(dx, dy);
 
-        p.vx *= 0.85;
-        p.vy *= 0.85;
-
-        p.x += p.vx;
-        p.y += p.vy;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-        ctx.fillStyle = "#00f0ff";
-        ctx.fill();
+      if (dist < 120) {
+        const force = (120 - dist) * 0.12;
+        const angle = Math.atan2(dy, dx);
+        p.vx += Math.cos(angle) * force;
+        p.vy += Math.sin(angle) * force;
+      }
     }
 
-    requestAnimationFrame(animate);
+    /* amortecimento */
+    p.vx *= 0.88;
+    p.vy *= 0.88;
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    ctx.fillStyle = "#4f9cff";
+    ctx.fillRect(p.x, p.y, 2, 2);
+  }
+
+  requestAnimationFrame(animate);
 }
 
 animate();
