@@ -149,7 +149,24 @@ footer {
   © 2026 — Portfólio pessoal
 </footer>
 </div>
+  
+<script>
+window.addEventListener("load", () => {
+  const audio = new Audio("som.mp3");
+  audio.loop = true;
 
+  // Tenta tocar imediatamente
+  audio.play().catch(() => {
+    // Se o autoplay falhar, toca quando o usuário clicar na página
+    const clickHandler = () => {
+      audio.play();
+      window.removeEventListener("click", clickHandler);
+    };
+    window.addEventListener("click", clickHandler);
+  });
+});
+</script>
+  
 <script>
 /* ======================
    FUNÇÃO UNIFICADA DE CANVAS
