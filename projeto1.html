@@ -3,60 +3,51 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Tecido Interativo</title>
+<title>Tecido Vivo</title>
 
 <style>
-  html, body {
+  * {
     margin: 0;
     padding: 0;
-    background: #0e0e0e;
     overflow: hidden;
-    touch-action: none; /* ESSENCIAL para touch */
+    background: #000;
+    touch-action: none;
   }
-
   canvas {
     display: block;
-  }
-
-  .back {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    font-family: system-ui, sans-serif;
-    font-size: 0.9rem;
-    color: #9a9a9a;
-    text-decoration: none;
-    z-index: 10;
-  }
-
-  .back:hover {
-    color: #4f9cff;
   }
 </style>
 </head>
 
 <body>
-
-<a href="index.html" class="back">← voltar</a>
 <canvas id="fabric"></canvas>
 
 <script>
+/* ======================
+   TECIDO — COLAPSO GRADUAL
+====================== */
+
 const canvas = document.getElementById("fabric");
 const ctx = canvas.getContext("2d");
 
-/* ===== RESIZE ===== */
+let points = [];
+const spacing = 18;
+
+let pointer = {
+  x: 0,
+  y: 0,
+  active: false
+};
+
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  createGrid();
 }
-resize();
 window.addEventListener("resize", resize);
 
-/* ===== TECIDO ===== */
-const spacing = 18;
-let points = [];
-
-function init() {
+/* ===== GRID ===== */
+function createGrid() {
   points = [];
   for (let y = 0; y < canvas.height; y += spacing) {
     for (let x = 0; x < canvas.width; x += spacing) {
@@ -68,70 +59,59 @@ function init() {
     }
   }
 }
-init();
 
-/* ===== PONTEIRO (mouse + touch) ===== */
-const pointer = {
-  x: -9999,
-  y: -9999,
-  active: false
-};
+/* ===== INPUT ===== */
+function setPointer(x, y, state) {
+  pointer.x = x;
+  pointer.y = y;
+  pointer.active = state;
+}
 
-/* Mouse */
-window.addEventListener("mousemove", e => {
+canvas.addEventListener("mousedown", e =>
+  setPointer(e.clientX, e.clientY, true)
+);
+canvas.addEventListener("mousemove", e => {
   pointer.x = e.clientX;
   pointer.y = e.clientY;
-  pointer.active = true;
 });
+canvas.addEventListener("mouseup", () => pointer.active = false);
+canvas.addEventListener("mouseleave", () => pointer.active = false);
 
-window.addEventListener("mouseleave", () => {
-  pointer.active = false;
+canvas.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  setPointer(t.clientX, t.clientY, true);
 });
-
-/* Touch */
-window.addEventListener("touchstart", e => {
+canvas.addEventListener("touchmove", e => {
   const t = e.touches[0];
   pointer.x = t.clientX;
   pointer.y = t.clientY;
-  pointer.active = true;
-}, { passive: false });
-
-window.addEventListener("touchmove", e => {
-  e.preventDefault(); // FAZ SEGUIR O DEDO
-  const t = e.touches[0];
-  pointer.x = t.clientX;
-  pointer.y = t.clientY;
-}, { passive: false });
-
-window.addEventListener("touchend", () => {
-  pointer.active = false;
 });
+canvas.addEventListener("touchend", () => pointer.active = false);
 
 /* ===== ANIMAÇÃO ===== */
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  for (const p of points) {
+  points.forEach(p => {
 
-    /* força de retorno */
+    // retorno elástico sempre ativo
     p.vx += (p.ox - p.x) * 0.025;
     p.vy += (p.oy - p.y) * 0.025;
 
-    /* interação */
     if (pointer.active) {
-      const dx = p.x - pointer.x;
-      const dy = p.y - pointer.y;
-      const dist = Math.hypot(dx, dy);
+      const dx = pointer.x - p.x;
+      const dy = pointer.y - p.y;
+      const d = Math.hypot(dx, dy) || 1;
 
-      if (dist < 120) {
-        const force = (120 - dist) * 0.12;
-        const angle = Math.atan2(dy, dx);
-        p.vx += Math.cos(angle) * force;
-        p.vy += Math.sin(angle) * force;
+      const radius = 180; // raio de influência
+      if (d < radius) {
+        const force = (radius - d) / radius; // gradual
+        p.vx += (dx / d) * force * 4;
+        p.vy += (dy / d) * force * 4;
       }
     }
 
-    /* amortecimento */
+    // amortecimento suave
     p.vx *= 0.88;
     p.vy *= 0.88;
 
@@ -140,13 +120,14 @@ function animate() {
 
     ctx.fillStyle = "#4f9cff";
     ctx.fillRect(p.x, p.y, 2, 2);
-  }
+  });
 
   requestAnimationFrame(animate);
 }
 
+/* ===== START ===== */
+resize();
 animate();
 </script>
-
 </body>
 </html>
