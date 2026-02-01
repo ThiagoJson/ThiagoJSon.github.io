@@ -128,6 +128,17 @@ footer {
       </a>
     </li>
 
+    <!-- PROJETO 5 -->
+    <li>
+      <a href="projeto5.html" class="topic-link">
+        <div class="card">
+          <div class="topic-title">Partículas Interativas</div>
+          <div class="topic-desc">Partículas independentes reagindo ao mouse e clique.</div>
+          <canvas id="fabric5"></canvas>
+        </div>
+      </a>
+    </li>
+
   </ul>
 </section>
 
@@ -145,6 +156,7 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
   const ctx = c.getContext("2d");
   let points = [];
   let pointer = {x:0, y:0, active:false};
+  let repel = false; // adicionado para Fabric5
 
   function resize() {
     c.width = c.offsetWidth;
@@ -154,6 +166,13 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
       for(let y=0;y<c.height;y+=spacing){
         for(let x=0;x<c.width;x+=spacing){
           points.push({x,y,ox:x,oy:y,vx:0,vy:0});
+        }
+      }
+    }
+    if(type==="fabric5"){
+      for(let y=0;y<c.height;y+=spacing){
+        for(let x=0;x<c.width;x+=spacing){
+          points.push({x,y,vx:(Math.random()-0.5)*1, vy:(Math.random()-0.5)*1});
         }
       }
     }
@@ -168,6 +187,8 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
     pointer.active=true;
   });
   c.addEventListener("mouseleave",()=>pointer.active=false);
+
+  c.addEventListener("click", ()=>{ if(type==="fabric5") repel=!repel; });
 
   c.addEventListener("touchstart", e => {
     const t = e.touches[0];
@@ -254,6 +275,45 @@ function initFabric({canvasId, spacing=16, type="points", color="#4f9cff", radiu
         ctx.fill();
       }
     }
+    else if(type==="fabric5"){ // partículas interativas
+      for(const p of points){
+        p.vx += (Math.random()-0.5)*0.1;
+        p.vy += (Math.random()-0.5)*0.1;
+
+        if(pointer.active){
+          const dx = pointer.x - p.x;
+          const dy = pointer.y - p.y;
+          const d = Math.hypot(dx,dy)||1;
+          const radiusLocal = 120;
+          if(repel){
+            if(d<radiusLocal){
+              const f = (radiusLocal-d)/radiusLocal;
+              p.vx -= (dx/d)*f*2;
+              p.vy -= (dy/d)*f*2;
+            }
+          } else {
+            if(d<radiusLocal){
+              const f = (radiusLocal-d)/radiusLocal;
+              p.vx += (dx/d)*f*1.5;
+              p.vy += (dy/d)*f*1.5;
+            }
+          }
+        }
+
+        p.vx *= 0.9;
+        p.vy *= 0.9;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if(p.x<0)p.x=c.width;
+        if(p.x>c.width)p.x=0;
+        if(p.y<0)p.y=c.height;
+        if(p.y>c.height)p.y=0;
+
+        ctx.fillStyle = `hsl(${Math.random()*360},100%,70%)`;
+        ctx.fillRect(p.x,p.y,2,2);
+      }
+    }
 
     requestAnimationFrame(animate);
   }
@@ -267,6 +327,7 @@ initFabric({canvasId:"fabric1", spacing:18, type:"fabric1", color:"#4f9cff", rad
 initFabric({canvasId:"fabric2", type:"orbital", color:"#9cffc1"});
 initFabric({canvasId:"fabric3", spacing:16, type:"points", color:"#00f0ff", radius:90});
 initFabric({canvasId:"fabric4", spacing:18, type:"fabric4", color:"#ff6cff", radius:120});
+initFabric({canvasId:"fabric5", spacing:18, type:"fabric5", color:"#ffdc4f", radius:120});
 </script>
 
 </body>
