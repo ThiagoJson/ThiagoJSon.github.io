@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Partículas Interativas — Thiago Martins</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  *{margin:0;padding:0;overflow:hidden;background:#000;touch-action:none;}
+  canvas{display:block;}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let points = [];
+const spacing = 18;
+let pointer = { x:0, y:0, active:false };
+let repel = false;
+
+function resize(){
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  points = [];
+  for(let y=0; y<canvas.height; y+=spacing){
+    for(let x=0; x<canvas.width; x+=spacing){
+      points.push({
+        x:x,
+        y:y,
+        ox:x,
+        oy:y,
+        vx:(Math.random()-0.5)*1,
+        vy:(Math.random()-0.5)*1
+      });
+    }
+  }
+}
+window.addEventListener("resize", resize);
+resize();
+
+/* Input interativo */
+canvas.addEventListener("mousemove", e => {
+  pointer.x = e.clientX;
+  pointer.y = e.clientY;
+  pointer.active = true;
+});
+canvas.addEventListener("mouseleave", () => pointer.active = false);
+canvas.addEventListener("click", () => repel = !repel);
+
+/* Animação */
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+  for(const p of points){
+    // Movimento natural leve
+    p.vx += (Math.random()-0.5)*0.1;
+    p.vy += (Math.random()-0.5)*0.1;
+
+    // Interação com o cursor
+    if(pointer.active){
+      const dx = pointer.x - p.x;
+      const dy = pointer.y - p.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const radius = 120;
+
+      if(repel){ // se clicar alterna entre repelir ou atrair
+        if(d < radius){
+          const f = (radius - d) / radius;
+          p.vx -= (dx/d) * f * 2;
+          p.vy -= (dy/d) * f * 2;
+        }
+      } else {
+        if(d < radius){
+          const f = (radius - d) / radius;
+          p.vx += (dx/d) * f * 1.5;
+          p.vy += (dy/d) * f * 1.5;
+        }
+      }
+    }
+
+    // Atrito para suavizar
+    p.vx *= 0.9;
+    p.vy *= 0.9;
+
+    // Atualiza posição
+    p.x += p.vx;
+    p.y += p.vy;
+
+    // Mantém dentro da tela
+    if(p.x < 0) p.x = canvas.width;
+    if(p.x > canvas.width) p.x = 0;
+    if(p.y < 0) p.y = canvas.height;
+    if(p.y > canvas.height) p.y = 0;
+
+    // Desenho das partículas
+    ctx.fillStyle = `hsl(${Math.random()*360}, 100%, 70%)`;
+    ctx.fillRect(p.x, p.y, 2, 2);
+  }
+
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
