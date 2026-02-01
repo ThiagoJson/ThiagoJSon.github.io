@@ -16,7 +16,14 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
+body 
+
+  <audio autoplay loop>
+  <source src="som.mp4" type="audio/mp4">
+  </audio>
+  
+  
+  {
   font-family: system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
@@ -330,9 +337,7 @@ initFabric({canvasId:"fabric4", spacing:18, type:"fabric4", color:"#ff6cff", rad
 initFabric({canvasId:"fabric5", spacing:18, type:"fabric5", color:"#ffdc4f", radius:120});
 </script>
   
-<audio autoplay loop>
-  <source src="som.mp4" type="audio/mp4">
-</audio>
+
 
 </body>
 </html>
