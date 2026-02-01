@@ -58,44 +58,33 @@ section h2 {
   padding-left: 12px;
 }
 
-/* CARD ÚNICO */
-.card {
-  background: var(--card);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 24px;
-}
-
-canvas {
-  width: 100%;
-  height: 180px;
-  background: #0b0b0b;
-  border-radius: 8px;
-  display: block;
-}
-
 /* LISTA */
 ul {
   list-style: none;
 }
 
 li {
+  margin-bottom: 24px;
+}
+
+/* LINK DO CARD */
+.topic-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* CARD */
+.card {
   background: var(--card);
-  padding: 18px 20px;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  padding: 16px;
   transition: transform .2s ease, background .2s ease;
 }
 
-li:hover {
-  transform: translateY(-2px);
+.card:hover {
+  transform: translateY(-3px);
   background: #1d1d1d;
-}
-
-li a {
-  color: var(--text);
-  text-decoration: none;
-  display: block;
 }
 
 .topic-title {
@@ -106,6 +95,16 @@ li a {
 .topic-desc {
   font-size: .9rem;
   color: var(--muted);
+  margin-bottom: 12px;
+}
+
+/* CANVAS */
+canvas {
+  width: 100%;
+  height: 180px;
+  background: #0b0b0b;
+  border-radius: 8px;
+  display: block;
 }
 
 footer {
@@ -123,37 +122,55 @@ footer {
 <header>
   <h1>Thiago Martins</h1>
   <p>
-    Coleção de tópicos, estudos e apresentações visuais.
-    Cada item abaixo leva a um projeto, experimento ou demonstração.
+    Coleção de estudos, experimentos e interações visuais.
+    Cada item leva a um projeto independente em tela cheia.
   </p>
 </header>
 
 <section>
   <h2>Interações Visuais</h2>
 
-
-
-  <!-- TÓPICOS -->
   <ul>
+
+    <!-- PROJETO 1 -->
     <li>
-      <a href="">
-        <a href="projeto1.html" class="topic-link">
-          <div class="topic-title" >Tecido interativo com mouse</div>
-        </a>
-        <div class="topic-desc">Simulação de superfly física básica.</div>
-          <!-- CARD ÚNICO COM CANVAS -->
+      <a href="projeto1.html" class="topic-link">
         <div class="card">
-          <canvas id="fabric"></canvas>
+          <div class="topic-title">Tecido interativo com mouse</div>
+          <div class="topic-desc">
+            Simulação de malha reagindo a movimento e toque.
+          </div>
+          <canvas id="fabric1"></canvas>
         </div>
       </a>
     </li>
 
+    <!-- PROJETO 2 -->
     <li>
-      <a href="#">
-        <div class="topic-title">Efeito magnético por clique</div>
-        <div class="topic-desc">Atração e retorno suave de partículas.</div>
+      <a href="projeto2.html" class="topic-link">
+        <div class="card">
+          <div class="topic-title">Malha gravitacional fluida</div>
+          <div class="topic-desc">
+            Estrutura orgânica com peso variável e distorção contínua.
+          </div>
+          <canvas id="fabric2"></canvas>
+        </div>
       </a>
     </li>
+    
+    <!-- PROJETO 3 -->
+    <li>
+      <a href="projeto1.html" class="topic-link">
+        <div class="card">
+          <div class="topic-title">Tecido interativo com mouse</div>
+          <div class="topic-desc">
+            Simulação de malha reagindo a movimento e toque.
+          </div>
+          <canvas id="fabric3"></canvas>
+        </div>
+      </a>
+    </li>
+
   </ul>
 </section>
 
@@ -161,10 +178,12 @@ footer {
   <h2>Estudos & Conceitos</h2>
   <ul>
     <li>
-      <a href="#">
+      <div class="card">
         <div class="topic-title">Simulações físicas em JavaScript</div>
-        <div class="topic-desc">Força, atrito, inércia e interpolação.</div>
-      </a>
+        <div class="topic-desc">
+          Força, atrito, inércia e interpolação visual.
+        </div>
+      </div>
     </li>
   </ul>
 </section>
@@ -176,53 +195,50 @@ footer {
 </div>
 
 <script>
-const canvas = document.getElementById("fabric");
-const ctx = canvas.getContext("2d");
+/* ======================
+   CANVAS 1 — TECIDO
+====================== */
+const c1 = document.getElementById("fabric1");
+const x1 = c1.getContext("2d");
 
-canvas.width = canvas.offsetWidth;
-canvas.height = canvas.offsetHeight;
+c1.width = c1.offsetWidth;
+c1.height = c1.offsetHeight;
 
-let mouse = {
-  x: canvas.width / 2,
-  y: canvas.height / 2,
-  active: false
-};
+let mouse1 = { x: 0, y: 0, active: false };
 
-canvas.addEventListener("mousemove", e => {
-  const r = canvas.getBoundingClientRect();
-  mouse.x = e.clientX - r.left;
-  mouse.y = e.clientY - r.top;
-  mouse.active = true;
+c1.addEventListener("mousemove", e => {
+  const r = c1.getBoundingClientRect();
+  mouse1.x = e.clientX - r.left;
+  mouse1.y = e.clientY - r.top;
+  mouse1.active = true;
 });
 
-canvas.addEventListener("mouseleave", () => {
-  mouse.active = false;
-});
+c1.addEventListener("mouseleave", () => mouse1.active = false);
 
-const points = [];
-const spacing = 18;
+const pts1 = [];
+const sp = 18;
 
-for (let y = 0; y < canvas.height; y += spacing) {
-  for (let x = 0; x < canvas.width; x += spacing) {
-    points.push({ x, y, ox: x, oy: y, vx: 0, vy: 0 });
+for (let y = 0; y < c1.height; y += sp) {
+  for (let x = 0; x < c1.width; x += sp) {
+    pts1.push({ x, y, ox: x, oy: y, vx: 0, vy: 0 });
   }
 }
 
-function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function anim1() {
+  x1.clearRect(0, 0, c1.width, c1.height);
 
-  points.forEach(p => {
+  pts1.forEach(p => {
     p.vx += (p.ox - p.x) * 0.03;
     p.vy += (p.oy - p.y) * 0.03;
 
-    if (mouse.active) {
-      const dx = mouse.x - p.x;
-      const dy = mouse.y - p.y;
-      const d = Math.sqrt(dx*dx + dy*dy) || 1;
+    if (mouse1.active) {
+      const dx = mouse1.x - p.x;
+      const dy = mouse1.y - p.y;
+      const d = Math.hypot(dx, dy) || 1;
       const f = Math.max(0, 70 - d) * 0.02;
 
-      p.vx += (dx / d) * f;
-      p.vy += (dy / d) * f;
+      p.vx += dx / d * f;
+      p.vy += dy / d * f;
     }
 
     p.vx *= 0.85;
@@ -231,14 +247,153 @@ function animate() {
     p.x += p.vx;
     p.y += p.vy;
 
-    ctx.fillStyle = "#4f9cff";
-    ctx.fillRect(p.x, p.y, 2, 2);
+    x1.fillStyle = "#4f9cff";
+    x1.fillRect(p.x, p.y, 2, 2);
   });
 
-  requestAnimationFrame(animate);
+  requestAnimationFrame(anim1);
 }
+anim1();
 
-animate();
+/* ======================
+   CANVAS 2 — FLUIDO
+====================== */
+const c2 = document.getElementById("fabric2");
+const x2 = c2.getContext("2d");
+
+c2.width = c2.offsetWidth;
+c2.height = c2.offsetHeight;
+
+let t = 0;
+
+function anim2() {
+  x2.clearRect(0, 0, c2.width, c2.height);
+
+  for (let i = 0; i < 140; i++) {
+    const a = i * 0.15 + t;
+    const r = 50 + Math.sin(t + i) * 20;
+
+    const x = c2.width / 2 + Math.cos(a) * r;
+    const y = c2.height / 2 + Math.sin(a * 1.3) * r * 0.7;
+
+    x2.fillStyle = "#9cffc1";
+    x2.fillRect(x, y, 2, 2);
+  }
+
+  t += 0.02;
+  requestAnimationFrame(anim2);
+}
+anim2();
+  
+
+/* ======================
+   CANVAS 3 — TOUCH FABRIC
+====================== */
+const c3 = document.getElementById("fabric3");
+const ctx3 = c3.getContext("2d");
+
+function resize3() {
+  c3.width = c3.offsetWidth;
+  c3.height = c3.offsetHeight;
+}
+resize3();
+window.addEventListener("resize", resize3);
+
+const spacing3 = 16;
+const points3 = [];
+
+function init3() {
+  points3.length = 0;
+  for (let y = 0; y < c3.height; y += spacing3) {
+    for (let x = 0; x < c3.width; x += spacing3) {
+      points3.push({
+        x, y,
+        ox: x, oy: y,
+        vx: 0, vy: 0
+      });
+    }
+  }
+}
+init3();
+
+let pointer3 = {
+  x: -9999,
+  y: -9999,
+  active: false
+};
+
+/* Mouse */
+c3.addEventListener("mousemove", e => {
+  const r = c3.getBoundingClientRect();
+  pointer3.x = e.clientX - r.left;
+  pointer3.y = e.clientY - r.top;
+  pointer3.active = true;
+});
+
+c3.addEventListener("mouseleave", () => {
+  pointer3.active = false;
+});
+
+/* Touch */
+c3.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  const r = c3.getBoundingClientRect();
+  pointer3.x = t.clientX - r.left;
+  pointer3.y = t.clientY - r.top;
+  pointer3.active = true;
+}, { passive: false });
+
+c3.addEventListener("touchmove", e => {
+  e.preventDefault();
+  const t = e.touches[0];
+  const r = c3.getBoundingClientRect();
+  pointer3.x = t.clientX - r.left;
+  pointer3.y = t.clientY - r.top;
+}, { passive: false });
+
+c3.addEventListener("touchend", () => {
+  pointer3.active = false;
+});
+
+function animate3() {
+  ctx3.clearRect(0, 0, c3.width, c3.height);
+
+  for (const p of points3) {
+    if (pointer3.active) {
+      const dx = p.x - pointer3.x;
+      const dy = p.y - pointer3.y;
+      const d = Math.hypot(dx, dy);
+
+      if (d < 90) {
+        const f = (90 - d) * 0.12;
+        const a = Math.atan2(dy, dx);
+        p.vx += Math.cos(a) * f;
+        p.vy += Math.sin(a) * f;
+      }
+    }
+
+    // retorno elástico
+    p.vx += (p.ox - p.x) * 0.02;
+    p.vy += (p.oy - p.y) * 0.02;
+
+    p.vx *= 0.86;
+    p.vy *= 0.86;
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    ctx3.fillStyle = "#00f0ff";
+    ctx3.beginPath();
+    ctx3.arc(p.x, p.y, 1.4, 0, Math.PI * 2);
+    ctx3.fill();
+  }
+
+  requestAnimationFrame(animate3);
+}
+animate3();
+  
+</script>
+
 </script>
 
 </body>
