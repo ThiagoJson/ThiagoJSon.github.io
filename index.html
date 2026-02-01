@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<title>Thiago Martins — Portfólio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<style>
+:root {
+  --bg: #0e0e0e;
+  --card: #161616;
+  --text: #eaeaea;
+  --muted: #9a9a9a;
+  --accent: #4f9cff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 60px 24px;
+}
+
+header {
+  margin-bottom: 60px;
+}
+
+header h1 {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+
+header p {
+  color: var(--muted);
+  max-width: 620px;
+}
+
+section {
+  margin-bottom: 64px;
+}
+
+section h2 {
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+  border-left: 3px solid var(--accent);
+  padding-left: 12px;
+}
+
+/* CARD ÚNICO */
+.card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+canvas {
+  width: 100%;
+  height: 180px;
+  background: #0b0b0b;
+  border-radius: 8px;
+  display: block;
+}
+
+/* LISTA */
+ul {
+  list-style: none;
+}
+
+li {
+  background: var(--card);
+  padding: 18px 20px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: transform .2s ease, background .2s ease;
+}
+
+li:hover {
+  transform: translateY(-2px);
+  background: #1d1d1d;
+}
+
+li a {
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+}
+
+.topic-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.topic-desc {
+  font-size: .9rem;
+  color: var(--muted);
+}
+
+footer {
+  margin-top: 80px;
+  font-size: .8rem;
+  color: var(--muted);
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <h1>Thiago Martins</h1>
+  <p>
+    Coleção de tópicos, estudos e apresentações visuais.
+    Cada item abaixo leva a um projeto, experimento ou demonstração.
+  </p>
+</header>
+
+<section>
+  <h2>Interações Visuais</h2>
+
+  <!-- CARD ÚNICO COM CANVAS -->
+  <div class="card">
+    <canvas id="fabric"></canvas>
+  </div>
+
+  <!-- TÓPICOS -->
+  <ul>
+    <li>
+      <a href="tecido-interativo.html">
+        <div class="topic-title">Tecido interativo com mouse</div>
+        <div class="topic-desc">Simulação de pano usando Canvas e física básica.</div>
+      </a>
+    </li>
+
+    <li>
+      <a href="#">
+        <div class="topic-title">Efeito magnético por clique</div>
+        <div class="topic-desc">Atração e retorno suave de partículas.</div>
+      </a>
+    </li>
+  </ul>
+</section>
+
+<section>
+  <h2>Estudos & Conceitos</h2>
+  <ul>
+    <li>
+      <a href="#">
+        <div class="topic-title">Simulações físicas em JavaScript</div>
+        <div class="topic-desc">Força, atrito, inércia e interpolação.</div>
+      </a>
+    </li>
+  </ul>
+</section>
+
+<footer>
+  © 2026 — Portfólio pessoal
+</footer>
+
+</div>
+
+<script>
+const canvas = document.getElementById("fabric");
+const ctx = canvas.getContext("2d");
+
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
+
+let mouse = {
+  x: canvas.width / 2,
+  y: canvas.height / 2,
+  active: false
+};
+
+canvas.addEventListener("mousemove", e => {
+  const r = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - r.left;
+  mouse.y = e.clientY - r.top;
+  mouse.active = true;
+});
+
+canvas.addEventListener("mouseleave", () => {
+  mouse.active = false;
+});
+
+const points = [];
+const spacing = 18;
+
+for (let y = 0; y < canvas.height; y += spacing) {
+  for (let x = 0; x < canvas.width; x += spacing) {
+    points.push({ x, y, ox: x, oy: y, vx: 0, vy: 0 });
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  points.forEach(p => {
+    p.vx += (p.ox - p.x) * 0.03;
+    p.vy += (p.oy - p.y) * 0.03;
+
+    if (mouse.active) {
+      const dx = mouse.x - p.x;
+      const dy = mouse.y - p.y;
+      const d = Math.sqrt(dx*dx + dy*dy) || 1;
+      const f = Math.max(0, 70 - d) * 0.02;
+
+      p.vx += (dx / d) * f;
+      p.vy += (dy / d) * f;
+    }
+
+    p.vx *= 0.85;
+    p.vy *= 0.85;
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    ctx.fillStyle = "#4f9cff";
+    ctx.fillRect(p.x, p.y, 2, 2);
+  });
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
