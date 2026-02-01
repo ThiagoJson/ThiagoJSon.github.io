@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Partículas Multitouch</title>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #0e0e0e;
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  canvas {
+    display: block;
+  }
+
+  .back {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-family: system-ui, sans-serif;
+    font-size: 0.9rem;
+    color: #9a9a9a;
+    text-decoration: none;
+    z-index: 10;
+  }
+
+  .back:hover {
+    color: #00f0ff;
+  }
+</style>
+</head>
+
+<body>
+
+<a href="index.html" class="back">← voltar</a>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+/* ===== RESIZE ===== */
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+/* ===== PARTÍCULAS ===== */
+const spacing = 18;
+let points = [];
+
+function init() {
+  points = [];
+  for (let y = 0; y < canvas.height; y += spacing) {
+    for (let x = 0; x < canvas.width; x += spacing) {
+      points.push({
+        x, y,
+        ox: x, oy: y,
+        vx: 0, vy: 0
+      });
+    }
+  }
+}
+init();
+
+/* ===== PONTEIROS (MULTITOUCH) ===== */
+let pointers = [];
+
+/* Mouse */
+window.addEventListener("mousedown", e => {
+  pointers = [{
+    x: e.clientX,
+    y: e.clientY,
+    active: true
+  }];
+});
+
+window.addEventListener("mousemove", e => {
+  if (pointers.length) {
+    pointers[0].x = e.clientX;
+    pointers[0].y = e.clientY;
+  }
+});
+
+window.addEventListener("mouseup", () => {
+  pointers = [];
+});
+
+/* Touch */
+window.addEventListener("touchstart", e => {
+  pointers = [];
+  for (let i = 0; i < e.touches.length; i++) {
+    pointers.push({
+      x: e.touches[i].clientX,
+      y: e.touches[i].clientY,
+      active: true
+    });
+  }
+}, { passive: false });
+
+window.addEventListener("touchmove", e => {
+  e.preventDefault();
+  pointers = [];
+  for (let i = 0; i < e.touches.length; i++) {
+    pointers.push({
+      x: e.touches[i].clientX,
+      y: e.touches[i].clientY,
+      active: true
+    });
+  }
+}, { passive: false });
+
+window.addEventListener("touchend", e => {
+  pointers = [];
+});
+
+/* ===== ANIMAÇÃO ===== */
+function animate() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (const p of points) {
+
+    /* atração por TODOS os dedos */
+    for (const pt of pointers) {
+      const dx = pt.x - p.x;
+      const dy = pt.y - p.y;
+      const dist = Math.hypot(dx, dy);
+
+      if (dist < 180) {
+        const force = (180 - dist) * 0.08;
+        p.vx += (dx / dist) * force;
+        p.vy += (dy / dist) * force;
+      }
+    }
+
+    /* retorno ao estado original */
+    p.vx += (p.ox - p.x) * 0.02;
+    p.vy += (p.oy - p.y) * 0.02;
+
+    /* amortecimento */
+    p.vx *= 0.85;
+    p.vy *= 0.85;
+
+    p.x += p.vx;
+    p.y += p.vy;
+
+    ctx.fillStyle = "#00f0ff";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
