@@ -2,156 +2,129 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Tecido Interativo</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #0e0e0e;
-    overflow: hidden;
-    touch-action: none; /* ESSENCIAL para mobile */
-  }
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #000;
+        touch-action: none; /* MUITO IMPORTANTE */
+    }
 
-  canvas {
-    display: block;
-  }
-
-  .back {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    font-family: system-ui, sans-serif;
-    font-size: 0.9rem;
-    color: #9a9a9a;
-    text-decoration: none;
-    z-index: 10;
-  }
-
-  .back:hover {
-    color: #4f9cff;
-  }
+    canvas {
+        display: block;
+    }
 </style>
 </head>
-
 <body>
 
-<a href="index.html" class="back">← voltar</a>
-<canvas id="fabric"></canvas>
+<canvas id="canvas"></canvas>
 
 <script>
-const canvas = document.getElementById("fabric");
+const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-/* ===== RESIZE ===== */
+let w, h;
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  initPoints();
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
 }
 window.addEventListener("resize", resize);
-
-/* ===== MOUSE / TOUCH STATE ===== */
-let pointer = {
-  x: window.innerWidth / 2,
-  y: window.innerHeight / 2,
-  down: false,
-  active: false
-};
-
-/* ===== DESKTOP ===== */
-document.addEventListener("mousemove", e => {
-  pointer.x = e.clientX;
-  pointer.y = e.clientY;
-  pointer.active = true;
-});
-
-document.addEventListener("mousedown", () => pointer.down = true);
-document.addEventListener("mouseup", () => pointer.down = false);
-document.addEventListener("mouseleave", () => pointer.active = false);
-
-/* ===== MOBILE ===== */
-canvas.addEventListener("touchstart", e => {
-  const t = e.touches[0];
-  pointer.x = t.clientX;
-  pointer.y = t.clientY;
-  pointer.down = true;
-  pointer.active = true;
-  e.preventDefault();
-}, { passive: false });
-
-canvas.addEventListener("touchmove", e => {
-  const t = e.touches[0];
-  pointer.x = t.clientX;
-  pointer.y = t.clientY;
-  e.preventDefault();
-}, { passive: false });
-
-canvas.addEventListener("touchend", () => {
-  pointer.down = false;
-  pointer.active = false;
-});
-
-canvas.addEventListener("touchcancel", () => {
-  pointer.down = false;
-  pointer.active = false;
-});
-
-/* ===== TECIDO ===== */
-const points = [];
-const spacing = 20;
-
-function initPoints() {
-  points.length = 0;
-  for (let y = 0; y < canvas.height; y += spacing) {
-    for (let x = 0; x < canvas.width; x += spacing) {
-      points.push({
-        x, y,
-        ox: x, oy: y,
-        vx: 0, vy: 0
-      });
-    }
-  }
-}
-
 resize();
 
-/* ===== ANIMAÇÃO ===== */
+// ===== CONFIGURAÇÃO DO TECIDO =====
+const spacing = 18;
+const cols = Math.floor(w / spacing);
+const rows = Math.floor(h / spacing);
+
+const points = [];
+
+for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+        points.push({
+            x: x * spacing,
+            y: y * spacing,
+            ox: x * spacing,
+            oy: y * spacing,
+            vx: 0,
+            vy: 0
+        });
+    }
+}
+
+// ===== INTERAÇÃO =====
+let pointer = {
+    x: -9999,
+    y: -9999,
+    active: false
+};
+
+// Mouse
+window.addEventListener("mousemove", e => {
+    pointer.x = e.clientX;
+    pointer.y = e.clientY;
+    pointer.active = true;
+});
+
+window.addEventListener("mouseleave", () => {
+    pointer.active = false;
+});
+
+// Touch (CELULAR)
+window.addEventListener("touchstart", e => {
+    const t = e.touches[0];
+    pointer.x = t.clientX;
+    pointer.y = t.clientY;
+    pointer.active = true;
+}, { passive: false });
+
+window.addEventListener("touchmove", e => {
+    e.preventDefault(); // ESSENCIAL
+    const t = e.touches[0];
+    pointer.x = t.clientX;
+    pointer.y = t.clientY;
+}, { passive: false });
+
+window.addEventListener("touchend", () => {
+    pointer.active = false;
+});
+
+// ===== ANIMAÇÃO =====
 function animate() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, w, h);
 
-  points.forEach(p => {
+    for (const p of points) {
+        let dx = p.x - pointer.x;
+        let dy = p.y - pointer.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
 
-    /* retorno ao estado original */
-    p.vx += (p.ox - p.x) * 0.02;
-    p.vy += (p.oy - p.y) * 0.02;
+        if (pointer.active && dist < 120) {
+            let force = (120 - dist) * 0.15;
+            let angle = Math.atan2(dy, dx);
+            p.vx += Math.cos(angle) * force;
+            p.vy += Math.sin(angle) * force;
+        }
 
-    /* interação */
-    if (pointer.active) {
-      const dx = pointer.x - p.x;
-      const dy = pointer.y - p.y;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        // física do tecido
+        p.vx += (p.ox - p.x) * 0.02;
+        p.vy += (p.oy - p.y) * 0.02;
 
-      let force = Math.max(0, 120 - dist) * 0.02;
-      if (pointer.down) force = 1.8; // mobile-friendly
+        p.vx *= 0.85;
+        p.vy *= 0.85;
 
-      p.vx += (dx / dist) * force;
-      p.vy += (dy / dist) * force;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#00f0ff";
+        ctx.fill();
     }
 
-    /* amortecimento */
-    p.vx *= 0.88;
-    p.vy *= 0.88;
-
-    p.x += p.vx;
-    p.y += p.vy;
-
-    ctx.fillStyle = "#4f9cff";
-    ctx.fillRect(p.x, p.y, 2, 2);
-  });
-
-  requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 }
 
 animate();
